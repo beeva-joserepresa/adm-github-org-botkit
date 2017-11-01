@@ -33,5 +33,8 @@
     "slack"
   ],
   "author": "ben@howdy.ai",
-  "license": "ISC"
+  "license": "ISC",
+  "engines": {
+    "node": "8.9.0"
+  }
 }
