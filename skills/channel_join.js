@@ -6,11 +6,12 @@ async function dailyResume(controller, bot, message) {
   const text = 'Hola k ase, aquí hay que mostrar el número de issues abiertas';
 
   bot.reply(message, text);
+  debug(text)
 }
 
 module.exports = function(controller) {
   controller.on('bot_channel_join', async function(bot, message) {
-    const dailyReportSchedule = schedule.scheduleJob('*/10 * * * * *', dailyResume.bind(this, controller));
+    const dailyReportSchedule = schedule.scheduleJob('*/10 * * * * *', dailyResume.bind(this, controller, bot, message));
 
     // Notify studio
     try {
