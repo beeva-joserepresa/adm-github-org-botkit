@@ -1,16 +1,32 @@
 const debug = require('debug')('botkit:channel_join');
 const schedule = require('node-schedule');
 
-function dailyResume(controller, bot, message) {
+function dailyResume(controller, channelId) {
   const text = 'Hola k ase, aquí hay que mostrar el número de issues abiertas';
 
-  bot.reply(message, text);
-  debug(text)
+  const bot = controller.spawn({
+    token: process.env.clientSecret
+  }).startRTM((err, bot/* , payload */) => {
+    if (!err) {
+      bot.say({
+        text,
+        channel: channelId
+      });
+    } else {
+      debug(err);
+    }
+  });
 }
 
 module.exports = function(controller) {
-  controller.on('bot_channel_join', function(bot, message) {
+  // Wake up timers
+  controller.storage.channels.all((err, channels) => {
+    channels.filter((channel) => channel.notifications).map((channel) => {
+      schedule.scheduleJob('*/59 * * * *', dailyResume.bind(this, controller, channel.id));
+    });
+  });
 
+  controller.on('bot_channel_join', function(bot, message) {
     // Notify studio
     controller.studio.run(bot, 'channel_join', message.user, message.channel).catch((err) => {
       debug('Error: encountered an error loading onboarding script from Botkit Studio:', err);
@@ -29,7 +45,7 @@ module.exports = function(controller) {
           bot.reply(message, 'Some error has ocurred, the channels will not receive any report :(');
           debug(`I experienced an error adding your task: ${err}`);
         } else {
-          bot.reply(message, 'Channels is ready to receive reports');
+          bot.reply(message, 'Channel is ready to receive reports');
           bot.api.reactions.add({
             name: 'thumbsup',
             channel: message.channel,
@@ -39,6 +55,5 @@ module.exports = function(controller) {
       });
     });
 
-    // schedule.scheduleJob('*/10 * * * * *', dailyResume.bind(this, controller, bot, message));
   });
 };
