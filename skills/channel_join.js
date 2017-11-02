@@ -1,29 +1,34 @@
 const debug = require('debug')('botkit:channel_join');
 const schedule = require('node-schedule');
 
-function dailyResume(controller, channelId) {
+function sendDailyResume(bot, channelId) {
   const text = 'Hola k ase, aquí hay que mostrar el número de issues abiertas';
-
-  const bot = controller.spawn({
-    token: process.env.clientSecret
-  }).startRTM((err, bot/* , payload */) => {
-    if (!err) {
-      bot.say({
-        text,
-        channel: channelId
-      });
-    } else {
-      debug(err);
-    }
+  
+  console.log({text, channelId})
+  bot.say({
+    text,
+    channel: channelId
   });
 }
 
 module.exports = function(controller) {
+    console.log('aaaaaaaa')
   // Wake up timers
-  controller.storage.channels.all((err, channels) => {
-    channels.filter((channel) => channel.notifications).map((channel) => {
-      schedule.scheduleJob('*/59 * * * *', dailyResume.bind(this, controller, channel.id));
+  controller.on('create_bot', (bot/* , config */) => {
+    console.log('aaaaaaaa')
+    controller.storage.channels.all((err, channels) => {
+      channels = err ? [] : channels.filter((channel) => channel.notifications);
+      channels.forEach((channel) => {
+        bot.startRTM((err2) => {
+          if (err2) {
+            debug('Error creating cron');
+          }
+
+          sendDailyResume(bot, channel.id);
+        });
+      });
     });
+    
   });
 
   controller.on('bot_channel_join', function(bot, message) {
