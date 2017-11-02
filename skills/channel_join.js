@@ -12,10 +12,16 @@ function sendDailyResume(bot, channelId) {
 }
 
 module.exports = function(controller) {
-    console.log('aaaaaaaa')
+  controller.middleware.receive.use(function(bot, message, next) {
+
+    // do something...
+    console.log('RCVD:', message, bot);
+    next();
+
+  });
+
   // Wake up timers
   controller.on('create_bot', (bot/* , config */) => {
-    console.log('aaaaaaaa')
     controller.storage.channels.all((err, channels) => {
       channels = err ? [] : channels.filter((channel) => channel.notifications);
       channels.forEach((channel) => {
