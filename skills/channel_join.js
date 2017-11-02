@@ -16,23 +16,20 @@ module.exports = function(controller) {
       debug('Error: encountered an error loading onboarding script from Botkit Studio:', err);
     });
 
-    controller.storage.channel.get('schedule', (err, list) => {
-      if (!list || !list.length) {
-        list = [];
+    controller.storage.channels.get(message.channel, (err, channel) => {
+      if (!channel) {
+        channel = {};
+        channel.id = message.channel;
       }
 
-      if (list.contains(message.channel)) {
-        return;
-      }
+      channel.notifications = true;
 
-      list.push(message.channel);
-
-      controller.storage.channel.save(list, (err2/* , saved */) => {
+      controller.storage.channels.save(channel, (err2/* , saved */) => {
         if (err2) {
-          bot.reply(message, 'Some error has ocurred, the channel will not receive any report :(');
+          bot.reply(message, 'Some error has ocurred, the channels will not receive any report :(');
           debug(`I experienced an error adding your task: ${err}`);
         } else {
-          bot.reply(message, 'Channel is ready to receive reports');
+          bot.reply(message, 'Channels is ready to receive reports');
           bot.api.reactions.add({
             name: 'thumbsup',
             channel: message.channel,
