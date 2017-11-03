@@ -71,7 +71,7 @@ module.exports = function(controller) {
       team.subscriptions = team.subscriptions || [];
       
       // Check if channel is already added
-      if (team.subscriptions.contains(message.channel)) {
+      if (team.subscriptions.includes(message.channel)) {
         debug('Channel already subscribed');
         return;
       }
