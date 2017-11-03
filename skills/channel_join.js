@@ -29,7 +29,7 @@ function startCron(controller, id, token) {
 }
 
 module.exports = function(controller) {
-
+  debug('wderfe')
   // Wake up timers
   controller.on('create_bot', (bot/* , config */) => {
     controller.storage.teams.all((err, teams) => {
