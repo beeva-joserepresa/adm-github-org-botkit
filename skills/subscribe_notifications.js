@@ -120,9 +120,6 @@ module.exports = function(controller) {
 
   controller.on('interactive_message_callback', (bot, message) => {
     if (message.callback_id !== CALLBACK_DISABLE) {
-      console.log('interactive_message_callback', 'CALLBACK_DISABLE')
-      console.log(message.callback_id, message.actions)
-      // keep bubbling the event
       return true;
     }
 
@@ -134,16 +131,12 @@ module.exports = function(controller) {
         });
         return false;
       default:
-        // keep bubbling the event
         return true;
     }
   });
 
   controller.on('interactive_message_callback', (bot, message) => {
     if (message.callback_id !== CALLBACK_ENABLE) {
-      console.log('interactive_message_callback', 'CALLBACK_ENABLE')
-      console.log(message.callback_id, message.actions)
-      // keep bubbling the event
       return true;
     }
 
@@ -155,7 +148,10 @@ module.exports = function(controller) {
         });
         return false;
       default:
-        // keep bubbling the event
+        bot.replyInteractive(message, {
+          response_type: 'ephemeral',
+          text: 'I\'ll keep notifiying you'
+        });
         return true;
     }
   });
