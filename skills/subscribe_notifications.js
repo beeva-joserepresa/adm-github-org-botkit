@@ -2,6 +2,7 @@ const debug = require('debug')('botkit:channel_join');
 const schedule = require('node-schedule');
 
 const crons = {};
+const COMMAND_NOTIFICATIONS = '/notifications';
 const CALLBACK_ENABLE = '123';
 const CALLBACK_DISABLE = '321';
 const ACTION_YES = 'yes';
@@ -96,7 +97,7 @@ module.exports = function(controller) {
   //   subscriptions.forEach((user) => startCron(controller, user));
   // });
 
-  controller.hears(['notificaciones', 'notifications'], 'direct_message,direct_mention', (bot, message) => {
+  controller.hears(['notifications'], 'direct_message,direct_mention', (bot, message) => {
     // load user from storage...
     promptNotifications(controller, bot).then(
       (prompt) => bot.reply(message, prompt),
@@ -105,16 +106,12 @@ module.exports = function(controller) {
   });
 
   controller.on('slash_command', (bot, message) => {
-    switch (message.command) {
-      case '/notifications':
-      case '/notificaciones':
-        promptNotifications(controller, bot).then(
-          (prompt) => bot.replyPrivate(message, prompt),
-          (prompt) => bot.replyPrivate(message, prompt)
-        );
-        break;
-      default:
-        bot.replyPrivate(message, `I'm afraid I don't know how to ${message.command} yet.`);
+    if (message.command === COMMAND_NOTIFICATIONS) {
+      if (message.text === 'enable') {
+        bot.replyPrivate(message, 'Enable notifications');
+      } else if (message.text === 'disable') {
+        bot.replyPrivate(message, 'Disable notifications');
+      }
     }
   });
 
@@ -142,7 +139,7 @@ module.exports = function(controller) {
 
     switch (message.actions[0].name) {
       case ACTION_YES:
-        bot.replyPrivate(message, {
+        bot.replyInteractive(message, {
           response_type: 'ephemeral',
           text: 'Enable notifications'
         });
