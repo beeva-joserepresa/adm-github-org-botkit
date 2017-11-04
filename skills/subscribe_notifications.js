@@ -54,6 +54,7 @@ module.exports = function(controller) {
 
       let title;
       let callback_id;
+      let confirm;
 
       if (!user || !user.notifications) {
         title = '¿Do you wanna enable the notifications?';
@@ -61,9 +62,16 @@ module.exports = function(controller) {
       } else {
         title = 'You already have enabled chat notifications, ¿do you wanna disable it?';
         callback_id = CALLBACK_DISABLE;
+        confirm = {
+          title: 'Are you sure?',
+          text: 'I\'m not as heavy as you can imagine :(',
+          ok_text: 'Yes',
+          dismiss_text: 'No'
+        };
       }
 
       bot.reply(message, {
+        response_type: 'ephemeral',
         attachments:[{
           title,
           callback_id,
@@ -73,12 +81,7 @@ module.exports = function(controller) {
             text: 'Yes',
             value: 'yes',
             type: 'button',
-            confirm: {
-              title: 'Are you sure?',
-              text: 'I\'m not as heavy as you can imagine :(',
-              ok_text: 'Yes',
-              dismiss_text: 'No'
-            }
+            confirm
           }, {
             name: 'no',
             text: 'No',
@@ -87,6 +90,28 @@ module.exports = function(controller) {
           }]
         }]
       });
+    });
+  });
+
+  controller.on('interactive_message_callback', function(bot, message) {
+    if (message.callback_id !== CALLBACK_DISABLE) {
+      return;
+    }
+    bot.reply(message, {
+      response_type: 'ephemeral',
+      replace_original: false,
+      text: 'Disable notifications'
+    });
+  });
+
+  controller.on('interactive_message_callback', function(bot, message) {
+    if (message.callback_id !== CALLBACK_ENABLE) {
+      return;
+    }
+    bot.reply(message, {
+      response_type: 'ephemeral',
+      replace_original: false,
+      text: 'Enable notifications'
     });
   });
 
