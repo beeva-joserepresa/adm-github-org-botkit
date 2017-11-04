@@ -2,8 +2,8 @@ const debug = require('debug')('botkit:channel_join');
 const schedule = require('node-schedule');
 
 const crons = {};
-const CALLBACK_ENABLE = 123;
-const CALLBACK_DISABLE = 321;
+const CALLBACK_ENABLE = '123';
+const CALLBACK_DISABLE = '321';
 const ACTION_YES = 'yes';
 const ACTION_NO = 'no';
 
