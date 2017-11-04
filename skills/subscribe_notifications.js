@@ -4,6 +4,8 @@ const schedule = require('node-schedule');
 const crons = {};
 const CALLBACK_ENABLE = 123;
 const CALLBACK_DISABLE = 321;
+const ACTION_YES = 'yes';
+const ACTION_NO = 'no';
 
 // function sendDailyResume(controller, user) {
 //   const text = 'Hola k ase, aquí hay que mostrar el número de issues abiertas';
@@ -77,15 +79,15 @@ module.exports = function(controller) {
           callback_id,
           attachment_type: 'default',
           actions: [{
-            name: 'yes',
+            name: ACTION_YES,
             text: 'Yes',
-            value: 'yes',
+            value: ACTION_YES,
             type: 'button',
             confirm
           }, {
-            name: 'no',
+            name: ACTION_NO,
             text: 'No',
-            value: 'no',
+            value: ACTION_NO,
             type: 'button'
           }]
         }]
@@ -94,10 +96,11 @@ module.exports = function(controller) {
   });
 
   controller.on('interactive_message_callback', function(bot, message) {
-    if (message.callback_id !== CALLBACK_DISABLE) {
+    console.log(message)
+    if (message.callback_id !== CALLBACK_DISABLE && message.actions[0].name !== ACTION_YES) {
       return;
     }
-    bot.reply(message, {
+    bot.replyInteractive(message, {
       response_type: 'ephemeral',
       replace_original: false,
       text: 'Disable notifications'
@@ -105,10 +108,11 @@ module.exports = function(controller) {
   });
 
   controller.on('interactive_message_callback', function(bot, message) {
-    if (message.callback_id !== CALLBACK_ENABLE) {
+    console.log(message)
+    if (message.callback_id !== CALLBACK_ENABLE && message.actions[0].name !== ACTION_YES) {
       return;
     }
-    bot.reply(message, {
+    bot.replyInteractive(message, {
       response_type: 'ephemeral',
       replace_original: false,
       text: 'Enable notifications'
