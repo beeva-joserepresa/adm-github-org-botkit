@@ -45,7 +45,7 @@ module.exports = function(controller) {
   //   subscriptions.forEach((user) => startCron(controller, user));
   // });
 
-  controller.hears(['notificaciones', 'notifications'], 'direct_message', (bot, message) => {
+  controller.hears(['notificaciones', 'notifications'], 'direct_message,direct_mention', (bot, message) => {
     // load user from storage...
     controller.storage.users.get(message.user, (err, user) => {
       if (err) {
