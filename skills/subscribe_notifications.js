@@ -111,6 +111,11 @@ module.exports = function(controller) {
         bot.replyPrivate(message, 'Enable notifications');
       } else if (message.text === 'disable') {
         bot.replyPrivate(message, 'Disable notifications');
+      } else {
+        promptNotifications(controller, bot).then(
+          (prompt) => bot.replyPrivate(message, prompt),
+          (prompt) => bot.replyPrivate(message, prompt)
+        );
       }
     }
   });
@@ -126,9 +131,11 @@ module.exports = function(controller) {
           response_type: 'ephemeral',
           text: 'Disable notifications'
         });
-        return false;
       default:
-        return true;
+        bot.replyInteractive(message, {
+          response_type: 'ephemeral',
+          text: 'I\'ll keep notifiying you'
+        });
     }
   });
 
@@ -143,13 +150,11 @@ module.exports = function(controller) {
           response_type: 'ephemeral',
           text: 'Enable notifications'
         });
-        return false;
       default:
         bot.replyInteractive(message, {
           response_type: 'ephemeral',
-          text: 'I\'ll keep notifiying you'
+          text: 'Maybe next time?'
         });
-        return true;
     }
   });
 
