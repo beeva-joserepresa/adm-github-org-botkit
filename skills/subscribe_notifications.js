@@ -35,23 +35,11 @@ const ACTION_NO = 'no';
 //   sendDailyResume(controller, id, token);
 // }
 
-module.exports = function(controller) {
-  // Wake up timers
-  // controller.storage.users.all((err, users) => {
-  //   if (err || !users) {
-  //     return;
-  //   }
-
-  //   const subscriptions = users.filter((acc, user) => user.notifications);
-
-  //   subscriptions.forEach((user) => startCron(controller, user));
-  // });
-
-  controller.hears(['notificaciones', 'notifications'], 'direct_message,direct_mention', (bot, message) => {
-    // load user from storage...
+function promptNotifications(controller, message) {
+  return new Promise((resolve, reject) => {
     controller.storage.users.get(message.user, (err, user) => {
       if (err) {
-        bot.reply('Sorry but I can\'t enable the notifications right now :(');
+        reject('Sorry but I can\'t enable the notifications right now :(');
       }
 
       let title;
@@ -72,7 +60,7 @@ module.exports = function(controller) {
         };
       }
 
-      bot.reply(message, {
+      resolve({
         response_type: 'ephemeral',
         attachments:[{
           title,
@@ -94,29 +82,76 @@ module.exports = function(controller) {
       });
     });
   });
+}
 
-  controller.on('interactive_message_callback', function(bot, message) {
-    console.log(message)
-    if (message.callback_id !== CALLBACK_DISABLE && message.actions[0].name !== ACTION_YES) {
-      return;
-    }
-    bot.replyInteractive(message, {
-      response_type: 'ephemeral',
-      replace_original: false,
-      text: 'Disable notifications'
+module.exports = function(controller) {
+  // Wake up timers
+  // controller.storage.users.all((err, users) => {
+  //   if (err || !users) {
+  //     return;
+  //   }
+
+  //   const subscriptions = users.filter((acc, user) => user.notifications);
+
+  //   subscriptions.forEach((user) => startCron(controller, user));
+  // });
+
+  controller.hears(['notificaciones', 'notifications'], 'direct_message,direct_mention', (bot, message) => {
+    // load user from storage...
+    promptNotifications(controller, bot).then((prompt) => {
+      bot.reply(message, prompt);
+    }, (prompt) => {
+      bot.reply(message, prompt);
     });
   });
 
-  controller.on('interactive_message_callback', function(bot, message) {
-    console.log(message)
-    if (message.callback_id !== CALLBACK_ENABLE && message.actions[0].name !== ACTION_YES) {
+  controller.on('slash_command', (bot, message) => {
+    switch (message.command) {
+      case '/notifications':
+      case '/notificaciones':
+        promptNotifications(controller, bot).then((prompt) => {
+          bot.replyPrivate(message, prompt);
+        }, (prompt) => {
+          bot.replyPrivate(message, prompt);
+        });
+        break;
+      default:
+        bot.replyPrivate(message, `I'm afraid I don't know how to ${message.command} yet.`);
+    }
+  });
+
+  controller.on('interactive_message_callback', (bot, message) => {
+    if (message.callback_id !== CALLBACK_DISABLE) {
       return;
     }
-    bot.replyInteractive(message, {
-      response_type: 'ephemeral',
-      replace_original: false,
-      text: 'Enable notifications'
-    });
+
+    switch (message.actions[0].name) {
+      case ACTION_YES:
+        bot.replyInteractive(message, {
+          response_type: 'ephemeral',
+          text: 'Disable notifications'
+        });
+        break;
+      case ACTION_NO:
+        break;
+    }
+  });
+
+  controller.on('interactive_message_callback', (bot, message) => {
+    if (message.callback_id !== CALLBACK_ENABLE) {
+      return;
+    }
+
+    switch (message.actions[0].name) {
+      case ACTION_YES:
+        bot.replyInteractive(message, {
+          response_type: 'ephemeral',
+          text: 'Enable notifications'
+        });
+        break;
+      case ACTION_NO:
+        break;
+    }
   });
 
   // controller.on('bot_channel_join', function(bot, message) {
