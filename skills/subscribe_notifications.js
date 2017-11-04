@@ -142,7 +142,7 @@ module.exports = function(controller) {
 
     switch (message.actions[0].name) {
       case ACTION_YES:
-        bot.replyInteractive(message, {
+        bot.replyPrivate(message, {
           response_type: 'ephemeral',
           text: 'Enable notifications'
         });
