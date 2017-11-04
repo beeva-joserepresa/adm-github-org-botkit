@@ -98,22 +98,20 @@ module.exports = function(controller) {
 
   controller.hears(['notificaciones', 'notifications'], 'direct_message,direct_mention', (bot, message) => {
     // load user from storage...
-    promptNotifications(controller, bot).then((prompt) => {
-      bot.reply(message, prompt);
-    }, (prompt) => {
-      bot.reply(message, prompt);
-    });
+    promptNotifications(controller, bot).then(
+      (prompt) => bot.reply(message, prompt),
+      (prompt) => bot.reply(message, prompt)
+    );
   });
 
   controller.on('slash_command', (bot, message) => {
     switch (message.command) {
       case '/notifications':
       case '/notificaciones':
-        promptNotifications(controller, bot).then((prompt) => {
-          bot.replyPrivate(message, prompt);
-        }, (prompt) => {
-          bot.replyPrivate(message, prompt);
-        });
+        promptNotifications(controller, bot).then(
+          (prompt) => bot.replyPrivate(message, prompt),
+          (prompt) => bot.replyPrivate(message, prompt)
+        );
         break;
       default:
         bot.replyPrivate(message, `I'm afraid I don't know how to ${message.command} yet.`);
@@ -122,7 +120,8 @@ module.exports = function(controller) {
 
   controller.on('interactive_message_callback', (bot, message) => {
     if (message.callback_id !== CALLBACK_DISABLE) {
-      return;
+      // keep bubbling the event
+      return true;
     }
 
     switch (message.actions[0].name) {
@@ -132,14 +131,16 @@ module.exports = function(controller) {
           text: 'Disable notifications'
         });
         break;
-      case ACTION_NO:
-        break;
+      default:
+        // keep bubbling the event
+        return true;
     }
   });
 
   controller.on('interactive_message_callback', (bot, message) => {
     if (message.callback_id !== CALLBACK_ENABLE) {
-      return;
+      // keep bubbling the event
+      return true;
     }
 
     switch (message.actions[0].name) {
@@ -149,8 +150,9 @@ module.exports = function(controller) {
           text: 'Enable notifications'
         });
         break;
-      case ACTION_NO:
-        break;
+      default:
+        // keep bubbling the event
+        return true;
     }
   });
 
