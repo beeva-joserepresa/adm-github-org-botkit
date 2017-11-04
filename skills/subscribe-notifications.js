@@ -2,6 +2,8 @@ const debug = require('debug')('botkit:channel_join');
 const schedule = require('node-schedule');
 
 const crons = {};
+const CALLBACK_ENABLE = 123;
+const CALLBACK_DISABLE = 321;
 
 function sendDailyResume(controller, id, token) {
   const text = 'Hola k ase, aquí hay que mostrar el número de issues abiertas';
@@ -29,7 +31,6 @@ function startCron(controller, id, token) {
 }
 
 module.exports = function(controller) {
-  debug('wderfe')
   // Wake up timers
   controller.on('create_bot', (bot/* , config */) => {
     controller.storage.teams.all((err, teams) => {
@@ -51,6 +52,50 @@ module.exports = function(controller) {
       }, []);
 
       subscriptions.forEach(({ id, token }) => startCron(controller, id, token));
+    });
+  });
+
+  controller.hears(['notificaciones', 'notifications'], 'direct_message', (bot, message) => {
+    // load user from storage...
+    controller.storage.users.get(message.user, (err, user) => {
+      if (err) {
+        bot.reply('Sorry but I can\'t enable the notifications right now :(');
+      }
+
+      let title;
+      let callback_id;
+
+      if (!user || !user.notifications) {
+        title = '¿Do you wanna enable the notifications?';
+        callback_id = CALLBACK_ENABLE;
+      } else {
+        title = 'You have already enabled chat notifications, ¿do you wanna disable it?';
+        callback_id = CALLBACK_DISABLE;
+      }
+      bot.reply(message, {
+        attachments:[{
+          title,
+          callback_id,
+          attachment_type: 'default',
+          actions: [{
+            name: 'yes',
+            text: 'Yes',
+            value: 'yes',
+            type: 'button',
+            confirm: {
+              title: 'Are you sure?',
+              text: 'I\'m not as heavy as you can imagine :(',
+              ok_text: 'Yes',
+              dismiss_text: 'No'
+            }
+          }, {
+            name: 'no',
+            text: 'No',
+            value: 'no',
+            type: 'button'
+          }]
+        }]
+      });
     });
   });
 
