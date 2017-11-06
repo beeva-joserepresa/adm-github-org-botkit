@@ -147,6 +147,12 @@ if (process.env.studio_token) {
     console.log('To enable, pass in a studio_token parameter with a token from https://studio.botkit.ai/');
 }
 
+// Wake up cron
+const Cron = require('./lib/cron');
+
+const scheduler = new Cron(controller);
+
+
 
 
 
