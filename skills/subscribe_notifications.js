@@ -1,12 +1,12 @@
 const debug = require('debug')('botkit:channel_join');
 const schedule = require('node-schedule');
+const {
+  commands,
+  callbacks,
+  actions
+} = require('../lib/constants');
 
 const crons = {};
-const COMMAND_NOTIFICATIONS = '/notifications';
-const CALLBACK_ENABLE = '123';
-const CALLBACK_DISABLE = '321';
-const ACTION_YES = 'yes';
-const ACTION_NO = 'no';
 
 // function sendDailyResume(controller, user) {
 //   const text = 'Hola k ase, aquí hay que mostrar el número de issues abiertas';
@@ -36,9 +36,49 @@ const ACTION_NO = 'no';
 //   sendDailyResume(controller, id, token);
 // }
 
-function promptNotifications(controller, message) {
+function _subscribe(controller, message, reply, enable = true) {
+  controller.storage.users.get(message.user, (err, user) => {
+    if (err) {
+      debug(`No user was found: ${err}`);
+    }
+
+    user = user || { id: message.user };
+    user.notifications = enable;
+
+    controller.storage.users.save(user, (err2/* , saved */) => {
+      if (err2) {
+        debug(`Something bad happened: ${err2}`);
+      }
+
+      let text = 'You have been successfully subscribed to the notifications system :+1:';
+
+      if (!enable) {
+        text = 'You have been successfully removed from the notifications system :disappointed:';
+      }
+
+      // Respond and start the scheduler
+      reply(message, text);
+      // bot.api.reactions.add({
+      //   name: 'thumbsup',
+      //   channel: message.channel,
+      //   timestamp: message.ts
+      // });
+      // startCron(controller, message.channel, team.bot.token);
+    });
+  });
+}
+
+function unsubscribe(controller, message, reply) {
+  _subscribe(controller, message, reply, false);
+}
+
+function subscribe(controller, message, reply) {
+  _subscribe(controller, message, reply, true);
+}
+
+function promptNotifications(controller, userId) {
   return new Promise((resolve, reject) => {
-    controller.storage.users.get(message.user, (err, user) => {
+    controller.storage.users.get(userId, (err, user) => {
       if (err) {
         reject('Sorry but I can\'t enable the notifications right now :(');
       }
@@ -49,10 +89,10 @@ function promptNotifications(controller, message) {
 
       if (!user || !user.notifications) {
         title = '¿Do you wanna enable the notifications?';
-        callback_id = CALLBACK_ENABLE;
+        callback_id = callbacks.enableNotifications;
       } else {
         title = 'You already have enabled chat notifications, ¿do you wanna disable it?';
-        callback_id = CALLBACK_DISABLE;
+        callback_id = callbacks.disableNotifications;
         confirm = {
           title: 'Are you sure?',
           text: 'I\'m not as heavy as you can imagine :(',
@@ -68,15 +108,15 @@ function promptNotifications(controller, message) {
           callback_id,
           attachment_type: 'default',
           actions: [{
-            name: ACTION_YES,
+            name: actions.yes,
             text: 'Yes',
-            value: ACTION_YES,
+            value: actions.yes,
             type: 'button',
             confirm
           }, {
-            name: ACTION_NO,
+            name: actions.no,
             text: 'No',
-            value: ACTION_NO,
+            value: actions.no,
             type: 'button'
           }]
         }]
@@ -97,22 +137,24 @@ module.exports = function(controller) {
   //   subscriptions.forEach((user) => startCron(controller, user));
   // });
 
-  controller.hears(['notifications'], 'direct_message,direct_mention', (bot, message) => {
-    // load user from storage...
-    promptNotifications(controller, bot).then(
-      (prompt) => bot.reply(message, prompt),
-      (prompt) => bot.reply(message, prompt)
-    );
-  });
+  // controller.hears(['notifications'], 'direct_message,direct_mention', (bot, message) => {
+  //   // load user from storage...
+  //   promptNotifications(controller, bot).then(
+  //     (prompt) => bot.reply(message, prompt),
+  //     (prompt) => bot.reply(message, prompt)
+  //   );
+  // });
 
   controller.on('slash_command', (bot, message) => {
-    if (message.command === COMMAND_NOTIFICATIONS) {
+    if (message.command === commands.notifications) {
       if (message.text === 'enable') {
-        bot.replyPrivate(message, 'Enable notifications');
+        // bot.replyPrivate(message, 'Enable notifications');
+        subscribe(controller, message, bot.replyPrivate.bind(bot));
       } else if (message.text === 'disable') {
-        bot.replyPrivate(message, 'Disable notifications');
+        // bot.replyPrivate(message, 'Disable notifications');
+        unsubscribe(controller, message, bot.replyPrivate.bind(bot));
       } else {
-        promptNotifications(controller, bot).then(
+        promptNotifications(controller, message.user).then(
           (prompt) => bot.replyPrivate(message, prompt),
           (prompt) => bot.replyPrivate(message, prompt)
         );
@@ -121,79 +163,45 @@ module.exports = function(controller) {
   });
 
   controller.on('interactive_message_callback', (bot, message) => {
-    if (message.callback_id !== CALLBACK_DISABLE) {
+    if (message.callback_id !== callbacks.disableNotifications) {
       return true;
     }
 
     switch (message.actions[0].name) {
-      case ACTION_YES:
-        bot.replyInteractive(message, {
-          response_type: 'ephemeral',
-          text: 'Disable notifications'
-        });
-      default:
-        bot.replyInteractive(message, {
-          response_type: 'ephemeral',
-          text: 'I\'ll keep notifiying you'
-        });
+    case actions.no:
+      // bot.replyInteractive(message, {
+      //   response_type: 'ephemeral',
+      //   text: 'Disable notifications'
+      // });
+      unsubscribe(controller, message, bot.replyInteractive.bind(bot));
+      break;
+    default:
+      bot.replyInteractive(message, {
+        response_type: 'ephemeral',
+        text: 'I\'ll keep notifiying you :+1:'
+      });
     }
   });
 
   controller.on('interactive_message_callback', (bot, message) => {
-    if (message.callback_id !== CALLBACK_ENABLE) {
+    if (message.callback_id !== callbacks.enableNotifications) {
       return true;
     }
 
     switch (message.actions[0].name) {
-      case ACTION_YES:
-        bot.replyInteractive(message, {
-          response_type: 'ephemeral',
-          text: 'Enable notifications'
-        });
-      default:
-        bot.replyInteractive(message, {
-          response_type: 'ephemeral',
-          text: 'Maybe next time?'
-        });
+    case actions.yes:
+      // bot.replyInteractive(message, {
+      //   response_type: 'ephemeral',
+      //   text: 'Enable notifications'
+      // });
+      subscribe(controller, message, bot.replyInteractive.bind(bot));
+      break;
+    default:
+      bot.replyInteractive(message, {
+        response_type: 'ephemeral',
+        text: 'Maybe next time?'
+      });
     }
   });
 
-  // controller.on('bot_channel_join', function(bot, message) {
-  //   // find all teams
-  //   controller.storage.teams.get(message.team, (err, team) => {
-  //     if (!team) {
-  //       debug(`No team was found: ${err}`);
-  //       return;
-  //     }
-
-  //     // Initialize the subscriptions array if not exist
-  //     team.subscriptions = team.subscriptions || [];
-      
-  //     // Check if channel is already added
-  //     if (team.subscriptions.includes(message.channel)) {
-  //       debug('Channel already subscribed');
-  //       return;
-  //     }
-
-  //     team.subscriptions.push(message.channel);
-
-  //     // Save the team
-  //     controller.storage.teams.save(team, (err2/* , saved */) => {
-  //       if (err2) {
-  //         bot.reply(message, 'Some error has ocurred, the channels will not receive any report :(');
-  //         debug(`I experienced an error adding your task: ${err}`);
-  //         return;
-  //       }
-
-  //       // Respond and starrt the scheduler
-  //       bot.reply(message, 'Channel is ready to receive reports :)');
-  //       bot.api.reactions.add({
-  //         name: 'thumbsup',
-  //         channel: message.channel,
-  //         timestamp: message.ts
-  //       });
-  //       startCron(controller, message.channel, team.bot.token);
-  //     });
-  //   });
-  // });
 };
