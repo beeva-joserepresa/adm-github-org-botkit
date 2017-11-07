@@ -5,35 +5,6 @@ const {
   actions
 } = require('../lib/constants');
 
-
-// function sendDailyResume(controller, user) {
-//   const text = 'Hola k ase, aquí hay que mostrar el número de issues abiertas';
-
-//   controller.spawn({ token }).startRTM((err, bot) => {
-//     if (err) {
-//       return;
-//     }
-
-//     bot.startPrivateConversation({
-//       user: user.id
-//     }, function (err, convo) {
-//       if (!err && convo) {
-//         convo.say('Hello there! I messaged you because you where in the channel #general');
-//       }
-//     });
-//   });
-// }
-
-
-// function startCron(controller, user) {
-//   if (crons[id]) {
-//     // sendDailyResume(controller, id, token);
-//   } else {
-//     crons[id] = schedule.scheduleJob('*/5 * * * *', sendDailyResume.bind(this, controller, id, token));
-//   }
-//   sendDailyResume(controller, id, token);
-// }
-
 function _subscribe(controller, message, reply, enable = true) {
   controller.storage.users.get(message.user, (err, user) => {
     if (err) {
@@ -56,12 +27,6 @@ function _subscribe(controller, message, reply, enable = true) {
 
       // Respond and start the scheduler
       reply(message, text);
-      // bot.api.reactions.add({
-      //   name: 'thumbsup',
-      //   channel: message.channel,
-      //   timestamp: message.ts
-      // });
-      // startCron(controller, message.channel, team.bot.token);
     });
   });
 }
@@ -124,25 +89,6 @@ function promptNotifications(controller, userId) {
 }
 
 module.exports = function(controller) {
-  // Wake up timers
-  // controller.storage.users.all((err, users) => {
-  //   if (err || !users) {
-  //     return;
-  //   }
-
-  //   const subscriptions = users.filter((acc, user) => user.notifications);
-
-  //   subscriptions.forEach((user) => startCron(controller, user));
-  // });
-
-  // controller.hears(['notifications'], 'direct_message,direct_mention', (bot, message) => {
-  //   // load user from storage...
-  //   promptNotifications(controller, bot).then(
-  //     (prompt) => bot.reply(message, prompt),
-  //     (prompt) => bot.reply(message, prompt)
-  //   );
-  // });
-
   controller.on('slash_command', (bot, message) => {
     if (message.command === commands.notifications) {
       if (message.text === 'enable') {
