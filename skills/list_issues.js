@@ -1,12 +1,14 @@
 const debug = require('debug')('botkit:channel_join');
+const luis = require('botkit-middleware-luis');
 const {
   commands,
   callbacks,
-  actions
+  actions,
+  intents
 } = require('../lib/constants');
 
 module.exports = function(controller) {
-  controller.hears(['hello'], 'direct_message,direct_mention', (bot, message) => {
+  controller.hears(['hello'], 'direct_message,direct_mention', luis.middleware.hereIntent, (bot, message) => {
     bot.startConversationInThread(message, (err, convo) => {
       convo.say('Hello!');
 
@@ -23,8 +25,17 @@ module.exports = function(controller) {
           }]
         }]
       }, (response, conversation) => {
-        switch (response.text) {
-        case actions.listIssues:
+    console.log('--------------')
+    console.log('--------------')
+    console.log('--------------')
+    console.log(response.topIntent)
+    console.log('--------------')
+    console.log('--------------')
+    console.log('--------------')
+        switch (response.topIntent && response.topIntent.intent) {
+        case intents.listIssues:
+          conversation.say('Listar issues... Oído cocina!');
+          conversation.next();
           break;
         default:
           conversation.repeat();
