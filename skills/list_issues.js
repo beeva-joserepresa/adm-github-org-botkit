@@ -25,23 +25,30 @@ module.exports = function(controller) {
           }]
         }]
       }, (response, conversation) => {
-    console.log('--------------')
-    console.log('--------------')
-    console.log('--------------')
-    console.log(response.topIntent)
-    console.log('--------------')
-    console.log('--------------')
-    console.log('--------------')
         switch (response.topIntent && response.topIntent.intent) {
         case intents.listIssues:
           conversation.say('Listar issues... Oído cocina!');
-          conversation.next();
           break;
         default:
+          conversation.say('Sorry, I don\'t know what it means :(');
           conversation.repeat();
-          conversation.next();
         }
+        conversation.next();
       });
     });
+  });
+
+  controller.on('interactive_message_callback', (bot, message) => {
+    if (message.callback_id !== callbacks.mainMenu) {
+      return true;
+    }
+
+    switch (message.text) {
+    case intents.listIssues:
+      bot.reply('Listar issues... Oído cocina!');
+      break;
+    default:
+      // Do nothing
+    }
   });
 };

@@ -156,7 +156,7 @@ if (process.env.LUIS) {
   };
 
   controller.middleware.receive.use(luis.middleware.receive(luisOptions));
-  controller.middleware.send.use(luis.middleware.hereIntent);
+  // controller.middleware.send.use(luis.middleware.hereIntent);
 }
 
 
