@@ -69,6 +69,7 @@ const bot_options = {
   clientSecret: process.env.clientSecret,
   debug: false,
   scopes: ['bot'],
+  interactive_replies: true,
   studio_token: process.env.studio_token,
   studio_command_uri: process.env.studio_command_uri
 };
