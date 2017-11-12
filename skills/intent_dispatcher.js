@@ -1,7 +1,6 @@
 require('debug')('botkit:intent_dispatcher');
 const luis = require('botkit-middleware-luis');
 const listIssues = require('../lib/convos/list_issues');
-const handleMenu = require('../lib/handle_menu');
 const {
   intents
 } = require('../lib/constants');
@@ -13,8 +12,6 @@ module.exports = function(controller) {
       return true;
     }
 
-    console.log(message.topIntent)
-
     switch (message.topIntent.intent) {
     case intents.listIssues:
       bot.say('Let me search... :mag:');
@@ -23,10 +20,6 @@ module.exports = function(controller) {
           listIssues(convo)
         ]).then(() => convo.activate());
       });
-      break;
-    case intents.menu:
-    case intents.hello:
-      handleMenu(controller, bot, message);
       break;
     case intents.help:
       const cmd = message.text.replace(/help\s?/, '');
