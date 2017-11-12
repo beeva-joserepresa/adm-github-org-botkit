@@ -17,7 +17,12 @@ module.exports = function(controller) {
 
     switch (message.topIntent.intent) {
     case intents.listIssues:
-      listIssues(controller, bot, message);
+      bot.say('Let me search... :mag:');
+      bot.createConversation(message, (err, convo) => {
+        Promise.all([
+          listIssues(convo)
+        ]).then(() => convo.activate());
+      });
       break;
     case intents.menu:
     case intents.hello:
