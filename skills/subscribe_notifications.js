@@ -113,13 +113,13 @@ module.exports = function(controller) {
 
     switch (message.actions[0].name) {
     case actions.no:
-      unsubscribe(controller, message, bot.replyInteractive.bind(bot));
-      break;
-    default:
       bot.replyInteractive(message, {
         response_type: 'ephemeral',
         text: 'I\'ll keep notifiying you :+1:'
       });
+      break;
+    default:
+      unsubscribe(controller, message, bot.replyInteractive.bind(bot));
     }
   });
 
