@@ -1,6 +1,6 @@
 require('debug')('botkit:intent_dispatcher');
 const luis = require('botkit-middleware-luis');
-const listIssues = require('../lib/list_issues');
+const listIssues = require('../lib/convos/list_issues');
 const handleMenu = require('../lib/handle_menu');
 const {
   intents
