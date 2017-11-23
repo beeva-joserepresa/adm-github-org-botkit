@@ -1,8 +1,10 @@
 # adm-github-org-hubot-botkit
 
-Manage the contributors in a Github organization talking to an Slack chatbot.
+Manage the members of a Github organization talking to an Slack chatbot.
 
-To test the chatbot use the **Slack Channel** [**adm-github-org.slack.com**](https://adm-github-org.slack.com/) or add the application using the **Slack integration button** of [adm-github-org-botkit.herokuapp.com](https://adm-github-org-botkit.herokuapp.com/)
+To test the chatbot use the **Slack Channel** [**adm-github-org.slack.com**](https://adm-github-org.slack.com/) or add the application using the **Slack integration button** of [adm-github-org-botkit.herokuapp.com](https://adm-github-org-botkit.herokuapp.com/).
+
+> To request access to the organization open an issue in [this](https://github.com/BEEVA-bots-poc/access) repo.
 
 ## Requirements
 
